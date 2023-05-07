@@ -217,7 +217,11 @@ void change(uint gpio, uint32_t mask) {
 		dec();
 		printf("DECREMENT: Alarm hour %d and alarm minute %d\n",alarmHour,alarmMinute);
 	} else if (gpio==BUTJUMP) {
-		inc();
+		alarmHour++; //increments the hour
+		if (alarmHour>23){
+			alarmHour=0;
+		}
+		printf("INCREMENT: Alarm hour %d and alarm minute %d\n",alarmHour,alarmMinute);
 	}
 }
 
@@ -250,7 +254,7 @@ int main() {
     gpio_set_irq_enabled_with_callback(BUTINC,GPIO_IRQ_EDGE_FALL,true,&change);
     gpio_set_irq_enabled_with_callback(BUTDEC,GPIO_IRQ_EDGE_FALL,true,&change);
     
-    gpio_set_irq_enabled_with_callback(BUTJUMP,GPIO_IRQ_LEVEL_LOW,true,&change);
+    gpio_set_irq_enabled_with_callback(BUTJUMP,GPIO_IRQ_EDGE_FALL,true,&change);
 
     outputAlarmTime();
     run_ntp_test();
