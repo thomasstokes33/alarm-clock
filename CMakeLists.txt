@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.13)
 
 
-include(../pico-sdk/pico_sdk_init.cmake)
+include(../pico-sdk/pico_sdk_init.cmake) ######todo: path to pico-sdk
 
 set(PROJECT_NAME time)
 
@@ -13,7 +13,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 pico_sdk_init()
 
 add_executable(${PROJECT_NAME})
-target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_LIST_DIR} ${PROJECT_SOURCE_DIR}/library ) #
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_LIST_DIR} ) #includes the location of this file as directory to search for headers 
 target_link_libraries(${PROJECT_NAME} 
 	pico_cyw43_arch_lwip_threadsafe_background 
 	pico_stdlib 
@@ -23,10 +23,10 @@ target_link_libraries(${PROJECT_NAME}
 )
 
 target_sources(${PROJECT_NAME}
-	PRIVATE picow_ntp_client.c buzzer.c
+	PRIVATE #add source files
 )
 
-message(PROJECT_BINARY_DIR="${PROJECT_BINARY_DIR}")
+message(PROJECT_BINARY_DIR="${PROJECT_BINARY_DIR}") # how to output messages
 message(Current list dir="${CMAKE_CURRENT_LIST_DIR} ")
 
 pico_add_extra_outputs(${PROJECT_NAME})
