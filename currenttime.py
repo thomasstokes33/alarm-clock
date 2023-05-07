@@ -5,8 +5,8 @@ import socket as sockImport
 import time
 import ntptime
 # Configuration
-SSID = "VM2B5E78"
-WIFI_PASSWORD = "ysd5s4kXwjce"
+SSID = "your ssid"
+WIFI_PASSWORD = "your password"
 WEB_SERVER_PORT = 8080
 led= machine.Pin("LED", machine.Pin.OUT)
 
