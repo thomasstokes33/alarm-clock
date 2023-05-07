@@ -13,8 +13,8 @@
 #include "lwip/dns.h"
 #include "lwip/pbuf.h"
 #include "lwip/udp.h"
-#include "picoHeader.h"
-
+#include "buzzer.h"
+#include "credentials.h"
 typedef struct NTP_T_ {
     ip_addr_t ntp_server_address;
     bool dns_request_sent;
@@ -38,21 +38,31 @@ int alarmMinute = 2;
 #define BUTDEC 20
 #define BUZZERPIN 18
 
+#define BUTJUMP 22
 
-
-
-
+int startup= true;
+float freq = 261.6256;
+void outputAlarmTime() {
+	printf("Alarm hour %d and alarm minute %d\n",alarmHour,alarmMinute);
+}
 
 // Called with results of operation
 static void ntp_result(NTP_T* state, int status, time_t *result) {
     if (status == 0 && result) {
         struct tm *utc = gmtime(result);
+        if (startup) {
+				alarmHour = utc->tm_hour;
+				alarmMinute = utc->tm_min -1;
+				startup=false;
+				outputAlarmTime();
+			}
         if (utc->tm_hour==alarmHour && utc->tm_min == alarmMinute) {
 			printf("alarm");
 			gpio_put(LED_PIN,1);
 			sleep_ms(1000);
 			gpio_put(LED_PIN,0);
 			playNote(BUZZERPIN,freq);
+			
 		}
         printf("got ntp response: %02d/%02d/%04d %02d:%02d:%02d\n", utc->tm_mday, utc->tm_mon + 1, utc->tm_year + 1900,
                utc->tm_hour, utc->tm_min, utc->tm_sec);
@@ -184,7 +194,7 @@ void inc() {
 			alarmHour=0;
 		}
 	}
-	printf("INCREMENT: Alarm hour %d and alarm minute %d\n",alarmHour,alarmMinute);
+	
 }
 
 void dec() {
@@ -196,16 +206,22 @@ void dec() {
 			alarmHour=23;
 		}
 	}
-	printf("DECREMENT: Alarm hour %d and alarm minute %d\n",alarmHour,alarmMinute);
+	
 }
 
 void change(uint gpio, uint32_t mask) {
 	if (gpio==BUTINC) {
 		inc();
+		printf("INCREMENT: Alarm hour %d and alarm minute %d\n",alarmHour,alarmMinute);
 	} else if (gpio==BUTDEC) {
 		dec();
+		printf("DECREMENT: Alarm hour %d and alarm minute %d\n",alarmHour,alarmMinute);
+	} else if (gpio==BUTJUMP) {
+		inc();
 	}
 }
+
+
 int main() {
     stdio_init_all();
 
@@ -218,9 +234,9 @@ int main() {
 	gpio_init(LED_PIN);
 	gpio_set_dir(LED_PIN,GPIO_OUT);
 	
-    if (cyw43_arch_wifi_connect_timeout_ms(WIFI_SSID,WIFI_PASS, CYW43_AUTH_WPA2_AES_PSK, 10000)) {
+    if (cyw43_arch_wifi_connect_timeout_ms(SSID,PASS, CYW43_AUTH_WPA2_AES_PSK, 10000)) {
         printf("failed to connect\n");
-        if (cyw43_arch_wifi_connect_timeout_ms("VM2B5E78", "ysd5s4kXwjce", CYW43_AUTH_WPA2_AES_PSK, 10000)) {
+        if (cyw43_arch_wifi_connect_timeout_ms(SSID, PASS, CYW43_AUTH_WPA2_AES_PSK, 10000)) {
 			printf("failed to connect\n");
         
 		}
@@ -229,11 +245,14 @@ int main() {
 	gpio_set_dir(BUTINC,GPIO_IN);
 	gpio_init(BUTDEC);
 	gpio_set_dir(BUTDEC,GPIO_IN);
-    
+    gpio_init(BUTJUMP);
+	gpio_set_dir(BUTJUMP,GPIO_IN);
     gpio_set_irq_enabled_with_callback(BUTINC,GPIO_IRQ_EDGE_FALL,true,&change);
     gpio_set_irq_enabled_with_callback(BUTDEC,GPIO_IRQ_EDGE_FALL,true,&change);
+    
+    gpio_set_irq_enabled_with_callback(BUTJUMP,GPIO_IRQ_LEVEL_LOW,true,&change);
 
-    printf("Alarm hour %d and alarm minute %d\n",alarmHour,alarmMinute);
+    outputAlarmTime();
     run_ntp_test();
     cyw43_arch_deinit();
    return 0;

@@ -1,12 +1,12 @@
-
+#include "buzzer.h"
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "hardware/pwm.h"
 #include "hardware/clocks.h"
 #include <stdint.h>
-float freq = 261.6256;
 
-static inline void playNote(uint gpio, float frequency) {
+
+void playNote(uint gpio, float frequency) {
     gpio_set_function(gpio, GPIO_FUNC_PWM);
     
     uint pwmSlice = pwm_gpio_to_slice_num(gpio);

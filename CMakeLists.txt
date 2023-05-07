@@ -13,7 +13,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 pico_sdk_init()
 
 add_executable(${PROJECT_NAME})
-target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_LIST_DIR} )
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_LIST_DIR} ${PROJECT_SOURCE_DIR}/library ) #
 target_link_libraries(${PROJECT_NAME} 
 	pico_cyw43_arch_lwip_threadsafe_background 
 	pico_stdlib 
@@ -23,8 +23,11 @@ target_link_libraries(${PROJECT_NAME}
 )
 
 target_sources(${PROJECT_NAME}
-	PRIVATE picow_ntp_client.c 
+	PRIVATE picow_ntp_client.c buzzer.c
 )
+
+message(PROJECT_BINARY_DIR="${PROJECT_BINARY_DIR}")
+message(Current list dir="${CMAKE_CURRENT_LIST_DIR} ")
 
 pico_add_extra_outputs(${PROJECT_NAME})
 
