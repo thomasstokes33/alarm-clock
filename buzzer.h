@@ -7,8 +7,8 @@
 #include <stdint.h>
 
 
-extern float freq;
+extern float freq; //extern makes the freq variable global. static would create a static instance for each source file, each with the same name (which is confusing)
 void playNote(uint, float ) ;
-#else
+
 	
 #endif

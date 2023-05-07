@@ -23,14 +23,14 @@ target_link_libraries(${PROJECT_NAME}
 )
 
 target_sources(${PROJECT_NAME}
-	PRIVATE #add source files
+	PRIVATE ##todo: add source files
 )
 
-message(PROJECT_BINARY_DIR="${PROJECT_BINARY_DIR}") # how to output messages
+message(PROJECT_BINARY_DIR="${PROJECT_BINARY_DIR}") # how to output messages during cmake process
 message(Current list dir="${CMAKE_CURRENT_LIST_DIR} ")
 
 pico_add_extra_outputs(${PROJECT_NAME})
 
-pico_enable_stdio_usb(${PROJECT_NAME} 1)
+pico_enable_stdio_usb(${PROJECT_NAME} 1) #ensures we can communicate over usb
 pico_enable_stdio_uart(${PROJECT_NAME} 1)
 pico_add_extra_outputs(${PROJECT_NAME})

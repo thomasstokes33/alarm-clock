@@ -40,8 +40,8 @@ int alarmMinute = 2;
 
 #define BUTJUMP 22
 
-int startup= true;
-float freq = 261.6256;
+int startup= true; //displays current alarm time on startup
+float freq = 261.6256; //middle c frequency
 void outputAlarmTime() {
 	printf("Alarm hour %d and alarm minute %d\n",alarmHour,alarmMinute);
 }
@@ -50,20 +50,11 @@ void outputAlarmTime() {
 static void ntp_result(NTP_T* state, int status, time_t *result) {
     if (status == 0 && result) {
         struct tm *utc = gmtime(result);
-        if (startup) {
-				alarmHour = utc->tm_hour;
-				alarmMinute = utc->tm_min -1;
-				startup=false;
-				outputAlarmTime();
-			}
-        if (utc->tm_hour==alarmHour && utc->tm_min == alarmMinute) {
-			printf("alarm");
-			gpio_put(LED_PIN,1);
-			sleep_ms(1000);
-			gpio_put(LED_PIN,0);
-			playNote(BUZZERPIN,freq);
-			
-		}
+        //todo: decide whether to call alarm.  
+     
+     
+     
+     
         printf("got ntp response: %02d/%02d/%04d %02d:%02d:%02d\n", utc->tm_mday, utc->tm_mon + 1, utc->tm_year + 1900,
                utc->tm_hour, utc->tm_min, utc->tm_sec);
     }
@@ -81,15 +72,13 @@ static int64_t ntp_failed_handler(alarm_id_t id, void *user_data);
 // Make an NTP request
 static void ntp_request(NTP_T *state) {
     // cyw43_arch_lwip_begin/end should be used around calls into lwIP to ensure correct locking.
-    // You can omit them if you are in a callback from lwIP. Note that when using pico_cyw_arch_poll
-    // these calls are a no-op and can be omitted, but it is a good practice to use them in
-    // case you switch the cyw43_arch type later.
+    // You can omit them if you are in a callback from lwIP.
     cyw43_arch_lwip_begin();
     struct pbuf *p = pbuf_alloc(PBUF_TRANSPORT, NTP_MSG_LEN, PBUF_RAM);
     uint8_t *req = (uint8_t *) p->payload;
     memset(req, 0, NTP_MSG_LEN);
     req[0] = 0x1b;
-    udp_sendto(state->ntp_pcb, p, &state->ntp_server_address, NTP_PORT);
+	//todo: send the udp request
     pbuf_free(p);
     cyw43_arch_lwip_end();
 }
@@ -150,7 +139,7 @@ static NTP_T* ntp_init(void) {
         free(state);
         return NULL;
     }
-    udp_recv(state->ntp_pcb, ntp_recv, state);
+    //todo: setup udp recv handler
     return state;
 }
 
@@ -198,31 +187,12 @@ void inc() {
 }
 
 void dec() {
-	alarmMinute--;
-	if (alarmMinute<0){
-		alarmHour--;
-		alarmMinute=59;
-		if (alarmHour<0){
-			alarmHour=23;
-		}
-	}
+	//todo: implement alarm clock decrease step
 	
 }
 
 void change(uint gpio, uint32_t mask) {
-	if (gpio==BUTINC) {
-		inc();
-		printf("INCREMENT: Alarm hour %d and alarm minute %d\n",alarmHour,alarmMinute);
-	} else if (gpio==BUTDEC) {
-		dec();
-		printf("DECREMENT: Alarm hour %d and alarm minute %d\n",alarmHour,alarmMinute);
-	} else if (gpio==BUTJUMP) {
-		alarmHour++; //increments the hour
-		if (alarmHour>23){
-			alarmHour=0;
-		}
-		printf("INCREMENT: Alarm hour %d and alarm minute %d\n",alarmHour,alarmMinute);
-	}
+	//todo: implement the alarm clock change handler
 }
 
 
@@ -240,7 +210,7 @@ int main() {
 	
     if (cyw43_arch_wifi_connect_timeout_ms(SSID,PASS, CYW43_AUTH_WPA2_AES_PSK, 10000)) {
         printf("failed to connect\n");
-        if (cyw43_arch_wifi_connect_timeout_ms(SSID, PASS, CYW43_AUTH_WPA2_AES_PSK, 10000)) {
+        if (cyw43_arch_wifi_connect_timeout_ms(SSID, PASS, CYW43_AUTH_WPA2_AES_PSK, 10000)) { //tries once more if it fails to connect
 			printf("failed to connect\n");
         
 		}
@@ -251,10 +221,10 @@ int main() {
 	gpio_set_dir(BUTDEC,GPIO_IN);
     gpio_init(BUTJUMP);
 	gpio_set_dir(BUTJUMP,GPIO_IN);
-    gpio_set_irq_enabled_with_callback(BUTINC,GPIO_IRQ_EDGE_FALL,true,&change);
+    gpio_set_irq_enabled_with_callback(BUTINC,GPIO_IRQ_EDGE_FALL,true,&change); //setups the callbacks. With this method, you can't have a different callback function for each gpio interrupt.
     gpio_set_irq_enabled_with_callback(BUTDEC,GPIO_IRQ_EDGE_FALL,true,&change);
     
-    gpio_set_irq_enabled_with_callback(BUTJUMP,GPIO_IRQ_EDGE_FALL,true,&change);
+    //todo: add the other callback for the hour
 
     outputAlarmTime();
     run_ntp_test();
