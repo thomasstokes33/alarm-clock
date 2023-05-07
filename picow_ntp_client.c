@@ -45,6 +45,7 @@ float freq = 261.6256;
 void outputAlarmTime() {
 	printf("Alarm hour %d and alarm minute %d\n",alarmHour,alarmMinute);
 }
+void dec();
 
 // Called with results of operation
 static void ntp_result(NTP_T* state, int status, time_t *result) {
@@ -52,7 +53,8 @@ static void ntp_result(NTP_T* state, int status, time_t *result) {
         struct tm *utc = gmtime(result);
         if (startup) {
 				alarmHour = utc->tm_hour;
-				alarmMinute = utc->tm_min -1;
+				alarmMinute = utc->tm_min;
+				dec();
 				startup=false;
 				outputAlarmTime();
 			}
